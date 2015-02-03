@@ -1,0 +1,3 @@
+Message Relay for Tox
+
+Forwards all incoming messages to any other Tox account, storing any messages when you're offline.
