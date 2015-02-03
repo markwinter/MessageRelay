@@ -17,6 +17,8 @@ void on_friend_request(Tox *m, const uint8_t *public_key, const uint8_t *data, u
 }
 
 void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, void *userdata) {
+	// TODO: First check if status == 1 before doing this file operating. Small performance increase
+	
 	FILE* file = fopen("relay", "r");
 
 	char id[64];
@@ -65,6 +67,8 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 
 	int friend_number = tox_get_friend_number(m, key);
 
+	// TODO: First check if relay is online before doing this
+
 	/* Get the name of the sender */
 	unsigned char* tmp = (unsigned char*) malloc(128 * sizeof(char));
 	int name_len = tox_get_name(m, friend_number, (uint8_t*) tmp);
@@ -111,6 +115,7 @@ void print_help() {
 	add_message(message_list, "Commands");
 	add_message(message_list, "/help - prints this message");
 	add_message(message_list, "/id - print the tox id of this relay");
+	// TODO: Add command to set name
 	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
 	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
 	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
