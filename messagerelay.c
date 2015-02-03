@@ -8,10 +8,12 @@ int keep_running = 1;
 Tox *tox;
 char user_input[MAX_INPUT];
 MessageList* message_list;
+int offlineonly = 0;
 
 void on_friend_request(Tox *m, const uint8_t *public_key, const uint8_t *data, uint16_t length, void *userdata) {
 	/* Auto accept all incoming friend requests */
-	tox_add_friend_norequest(m, public_key);	
+	tox_add_friend_norequest(m, public_key);
+	add_message(message_list, "Received friend request");	
 }
 
 void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, void *userdata) {
@@ -32,9 +34,14 @@ void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, vo
 		if (file) {
 			char line[1368];
 
+			add_message(message_list, "Sending stored messages to relay");	
+
 			while (fgets(line, 1368, file) != NULL) {
+				// TODO: Get actual length of text so not sending a shit load of null bytes
 				tox_send_message(m, friend_number, (uint8_t*) line, 1368); 
 			}
+
+			fclose(file);
 		}
 
 		FILE* file_ = fopen("saved_messages", "w");
@@ -58,12 +65,23 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 
 	int friend_number = tox_get_friend_number(m, key);
 
-	// TODO: Get sending friend name and prefix it to the messages so destination address knows who the
-	// messages are coming from. Might get tricky with message + name length being over 1368 bytes
+	/* Get the name of the sender */
+	unsigned char* tmp = (unsigned char*) malloc(128 * sizeof(char));
+	int name_len = tox_get_name(m, friend_number, (uint8_t*) tmp);
+	// TODO: Check for name_len being -1
+	char name[name_len]; 
+	strncpy(name, tmp, name_len);	
+	free(tmp);
+
+	/* Prefix name to message */
+	char message[name_len + length + 3];
+	strcat(message, name);
+	strcat(message, " | ");
+	strcat(message, string);
 
 	/* If friend is online forward message */
-	if (tox_get_friend_connection_status(tox, friend_number) == 1) {
-		tox_send_message(m, friend_number, string, length);
+	if (tox_get_friend_connection_status(tox, friend_number) == 1 && offlineonly != 1) {
+		tox_send_message(m, friend_number, (uint8_t*) message, name_len + length + 3);
 	} 
 
 	/* Store the message */	
@@ -95,6 +113,7 @@ void print_help() {
 	add_message(message_list, "/id - print the tox id of this relay");
 	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
 	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
+	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
 	add_message(message_list, "/clear - clears the screen");
 	add_message(message_list, "/quit - exits the client");
 }
@@ -276,6 +295,16 @@ void evaluate_input() {
 			keep_running = 0;	
 		} 
 
+		else if (command == 1189) { // offlineonly 
+			char toggle[1];
+			strncpy(toggle, &user_input[counter + 1], 1);
+
+			if (toggle[0] == '1')
+				offlineonly = 1;
+			else 
+				offlineonly = 0;	
+		}
+
 		else 
 			add_message(message_list, "Type /help for a list of commands");
 	} 
@@ -293,11 +322,16 @@ void refresh_screen() {
 	print_title();
 	print_connection();
 	print_bottom_bar();
+	print_offlineonly();
 
 	/* Print the message list to screen */
 	Item* curr = message_list->head;
 	int counter = 0;
 	int offset = 2;
+
+	/* If too many messages to display, then remove the top messages until it can fit */
+	if (message_list->message_count > ROW - 5)
+		shift_list_head(message_list, (message_list->message_count - ROW - 5));
 
 	while (curr != 0) {
 		mvprintw(offset + counter, 0, "%s", curr->message);
@@ -306,6 +340,19 @@ void refresh_screen() {
 	}
 
 	mvprintw(ROW-1, 0, "%s", user_input);
+}
+
+void print_offlineonly() {
+	char* message;
+
+	if (offlineonly)
+		message = "[ Offline Only ]";
+	else
+		message = "[ Online/Offline On ]";
+
+	attron(A_BOLD);
+	mvprintw(1, COL-strlen(message), "%s", message);
+	attroff(A_BOLD);
 }
 
 void print_connection() {
@@ -387,6 +434,9 @@ int main() {
 
 	if (!message_list)
 		return EXIT_FAILURE;
+
+	add_message(message_list, "Type /help for a list of commands");
+	add_message(message_list, "");
 
 	loop();	
 

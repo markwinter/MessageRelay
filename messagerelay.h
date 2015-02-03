@@ -11,6 +11,7 @@
 #include <tox/tox.h>
 
 void print_title();
+void print_offlineonly();
 void print_bottom_bar();
 void print_help();
 void save_data();
