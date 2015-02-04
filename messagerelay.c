@@ -19,7 +19,7 @@ void on_friend_request(Tox *m, const uint8_t *public_key, const uint8_t *data, u
 
 void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, void *userdata) {
 	int friend_number = tox_get_friend_number(m, relay_key);
-
+	
 	/* If user is coming online, send stored messages */
 	if (status == 1 && friendnumber == friend_number) {
 		FILE* file = fopen("saved_messages", "r");
@@ -43,25 +43,26 @@ void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, vo
 }
 
 void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t length, void *userdata) {
-	int friend_number = tox_get_friend_number(m, relay_key);
+	int relay_number = tox_get_friend_number(m, relay_key);
 
 	/* Get the name of the sender */
-	unsigned char* tmp = (unsigned char*) malloc(128 * sizeof(char));
-	int name_len = tox_get_name(m, friend_number, (uint8_t*) tmp);
+	char tmp[TOX_MAX_NAME_LENGTH];	
+	int name_len = tox_get_name(m, friendnumber, (uint8_t*) tmp);
 	// TODO: Check for name_len being -1
-	char name[name_len]; 
-	strncpy(name, tmp, name_len);	
-	free(tmp);
+	char name[name_len]; 	
+	memcpy(name, tmp, name_len);
 
-	/* Prefix name to message */
-	char message[name_len + length + 3];
-	strcat(message, name);
-	strcat(message, " | ");
-	strcat(message, string);
+	char* seperator = " | ";
+
+	int message_len = name_len + strlen(seperator) + length + 3;
+
+	/* Combine all into one message */
+	char message[message_len];
+	snprintf(message, message_len, "%s %s %s", name, seperator, (const char*) string);	
 
 	/* If friend is online forward message */
-	if (tox_get_friend_connection_status(tox, friend_number) == 1 && offlineonly != 1) {
-		tox_send_message(m, friend_number, (uint8_t*) message, name_len + length + 3);
+	if (tox_get_friend_connection_status(tox, relay_number) == 1 && offlineonly != 1) {
+		tox_send_message(m, relay_number, (const uint8_t*) message, message_len);
 	} 
 
 	/* Store the message */	
@@ -69,7 +70,7 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 		FILE* file = fopen("saved_messages", "a");
 
 		if (file) {
-			fwrite(message, sizeof(char), name_len + length + 3, file);
+			fwrite(message, sizeof(char), message_len, file);
 			fwrite("\n", sizeof(char), 1, file);
 			fclose(file);
 		}
@@ -91,6 +92,7 @@ void print_help() {
 	add_message(message_list, "Commands");
 	add_message(message_list, "/help - prints this message");
 	add_message(message_list, "/id - print the tox id of this relay");
+	// TODO: Add command to set name
 	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
 	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
 	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
@@ -137,11 +139,15 @@ void load_relay() {
 	FILE* file = fopen("relay", "r");
 
 	if (file) {
-		char id[64];
+		char id[76];
 		while (fscanf(file, "%s", id) != EOF);
 		fclose(file);		
 
-		relay_key = hex_string_to_bin(id);
+		/* Get just the public key part of the id */
+		char key[64];
+		strncpy(key, id, 64);
+
+		relay_key = hex_string_to_bin(key);
 	}
 }
 
