@@ -5,3 +5,5 @@ Forwards all incoming messages to another Tox account, storing any messages when
 Currently only allows for forwaring to a single account.
 
 Can toggle the relay to only store messages for when you're offline as opposed to actively relaying messages when you're online as well.
+
+To compile it just run ./compile. You'll need the tox libs installed on your distro 
