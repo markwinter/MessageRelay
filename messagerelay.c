@@ -9,6 +9,7 @@ Tox *tox;
 char user_input[MAX_INPUT];
 MessageList* message_list;
 int offlineonly = 0;
+unsigned char* relay_key;
 
 void on_friend_request(Tox *m, const uint8_t *public_key, const uint8_t *data, uint16_t length, void *userdata) {
 	/* Auto accept all incoming friend requests */
@@ -17,15 +18,7 @@ void on_friend_request(Tox *m, const uint8_t *public_key, const uint8_t *data, u
 }
 
 void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, void *userdata) {
-	FILE* file = fopen("relay", "r");
-
-	char id[64];
-
-	while (fscanf(file, "%s", id) != EOF);	
-
-	unsigned char* key = hex_string_to_bin(id);
-
-	int friend_number = tox_get_friend_number(m, key);
+	int friend_number = tox_get_friend_number(m, relay_key);
 
 	/* If user is coming online, send stored messages */
 	if (status == 1 && friendnumber == friend_number) {
@@ -41,29 +34,16 @@ void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, vo
 				tox_send_message(m, friend_number, (uint8_t*) line, 1368); 
 			}
 
+			/* Clear the file contents */
+			freopen("saved_messages", "w", file);
+
 			fclose(file);
 		}
-
-		FILE* file_ = fopen("saved_messages", "w");
-
-		if (file_) {
-			fwrite("", 0, 0, file_);
-			fclose(file_);
-		}	
 	}
 }
 
 void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t length, void *userdata) {
-	/* Load relay from relay file */
-	FILE* file = fopen("relay", "r");
-	
-	char id[64];
-
-	while (fscanf(file, "%s", id) != EOF);
-
-	unsigned char* key = hex_string_to_bin(id);
-
-	int friend_number = tox_get_friend_number(m, key);
+	int friend_number = tox_get_friend_number(m, relay_key);
 
 	/* Get the name of the sender */
 	unsigned char* tmp = (unsigned char*) malloc(128 * sizeof(char));
@@ -89,7 +69,7 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 		FILE* file = fopen("saved_messages", "a");
 
 		if (file) {
-			fwrite(string, sizeof(uint8_t), length, file);
+			fwrite(message, sizeof(char), name_len + length + 3, file);
 			fwrite("\n", sizeof(char), 1, file);
 			fclose(file);
 		}
@@ -151,6 +131,18 @@ void load_data() {
 	else 
 		save_data();
 	
+}
+
+void load_relay() {
+	FILE* file = fopen("relay", "r");
+
+	if (file) {
+		char id[64];
+		while (fscanf(file, "%s", id) != EOF);
+		fclose(file);		
+
+		relay_key = hex_string_to_bin(id);
+	}
 }
 
 uint8_t* hex_string_to_bin(char* string) {
@@ -437,6 +429,8 @@ int main() {
 
 	add_message(message_list, "Type /help for a list of commands");
 	add_message(message_list, "");
+
+	load_relay();
 
 	loop();	
 
