@@ -92,7 +92,7 @@ void print_help() {
 	add_message(message_list, "Commands");
 	add_message(message_list, "/help - prints this message");
 	add_message(message_list, "/id - print the tox id of this relay");
-	// TODO: Add command to set name
+	add_message(message_list, "/name - sets your name");	
 	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
 	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
 	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
@@ -244,6 +244,26 @@ void evaluate_input() {
 	
 			// message_list is in charge of freeing id so we dont have to here
 		}	
+
+		else if (command == 417) { // name 
+			int index = 0;
+			int length = 0;
+
+			while (user_input[index] != 0) {
+				length++;
+				index++;
+			}
+
+			/* Check for valid length of name */
+			if (length < 1 || length > TOX_MAX_NAME_LENGTH)
+				return;
+
+
+			char name[length];
+			strncpy(name, &user_input[counter + 1], length);
+			tox_set_name(tox, (const uint8_t*) name, length);
+
+		}
 
 		else if (command == 929 || command == 838) { // addfriend or addrelay
 			/* Extract Tox ID from the command parameters */
