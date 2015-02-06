@@ -22,18 +22,28 @@ void on_connection_change(Tox *m, int32_t friendnumber, const uint8_t status, vo
 	
 	/* If user is coming online, send stored messages */
 	if (status == 1 && friendnumber == friend_number) {
+		add_message(message_list, "Relay has come online - sending any stored messages");
+
 		FILE* file = fopen("saved_messages", "r");
 
 		if (file) {
+			int c;
 			char line[1368];
+			int counter = 0;
 
-			add_message(message_list, "Sending stored messages to relay");	
+			while ((c = fgetc(file)) != EOF) {
+				if ((char) c == '\n') {
+					char message[counter];
+					memcpy(message, line, counter);	
+					tox_send_message(m, friendnumber, (const uint8_t*) message, counter);
+					counter = 0;
+				}
 
-			while (fgets(line, 1368, file) != NULL) {
-				// TODO: Get actual length of text so not sending a shit load of null bytes
-				tox_send_message(m, friend_number, (uint8_t*) line, 1368); 
+				line[counter] = c;
+
+				counter++;	
 			}
-
+			
 			/* Clear the file contents */
 			freopen("saved_messages", "w", file);
 
@@ -48,17 +58,20 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 	/* Get the name of the sender */
 	char tmp[TOX_MAX_NAME_LENGTH];	
 	int name_len = tox_get_name(m, friendnumber, (uint8_t*) tmp);
+	tmp[name_len] = '\0';
 	// TODO: Check for name_len being -1
-	char name[name_len]; 	
-	memcpy(name, tmp, name_len);
+	char name[name_len+1]; 	
+	memcpy(name, tmp, name_len+1);
 
-	char* seperator = " | ";
+	const char* seperator = " | ";
 
-	int message_len = name_len + strlen(seperator) + length + 3;
+	int message_len = name_len+1 + strlen(seperator) + length;
+
+	// TODO: Check if message_len > 1368 and split into separate messages if it is
 
 	/* Combine all into one message */
-	char message[message_len];
-	snprintf(message, message_len, "%s %s %s", name, seperator, (const char*) string);	
+	char message[message_len];;
+	snprintf(message, message_len, "%s%s%s", name, seperator, (const char*) string);	
 
 	/* If friend is online forward message */
 	if (tox_get_friend_connection_status(tox, relay_number) == 1 && offlineonly != 1) {
@@ -255,14 +268,17 @@ void evaluate_input() {
 			}
 
 			/* Check for valid length of name */
-			if (length < 1 || length > TOX_MAX_NAME_LENGTH)
+			if (length < 1 || length > TOX_MAX_NAME_LENGTH) {
+				add_message(message_list, "Invalid name given");
 				return;
+			}
 
 
 			char name[length];
 			strncpy(name, &user_input[counter + 1], length);
 			tox_set_name(tox, (const uint8_t*) name, length);
 
+			add_message(message_list, "Successfully set new name");
 		}
 
 		else if (command == 929 || command == 838) { // addfriend or addrelay
