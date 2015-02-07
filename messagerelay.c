@@ -70,7 +70,7 @@ void on_message(Tox *m, int32_t friendnumber, const uint8_t *string, uint16_t le
 	// TODO: Check if message_len > 1368 and split into separate messages if it is
 
 	/* Combine all into one message */
-	char message[message_len];;
+	char message[message_len];
 	snprintf(message, message_len, "%s%s%s", name, seperator, (const char*) string);	
 
 	/* If friend is online forward message */
@@ -183,7 +183,7 @@ int init_tox() {
 	Tox_Options options;
 	options.ipv6enabled = 1;
 	options.udp_disabled = 0;
-	options.proxy_enabled = 0;
+	options.proxy_type = TOX_PROXY_NONE;
 
 	tox = tox_new(&options);
 
@@ -199,7 +199,7 @@ int init_tox() {
 
 	tox_set_name(tox, (uint8_t*) "Message Relay", strlen("Message Relay"));
 
-	char* address = "178.62.125.224";
+	const char* address = "178.62.125.224";
 	uint16_t port = 33445;
 	unsigned char* binary_string = hex_string_to_bin("10B20C49ACBD968D7C80F2E8438F92EA51F189F4E70CFBBB2C2C8C799E97F03E");
 	int res = tox_bootstrap_from_address(tox, address, port, binary_string);
