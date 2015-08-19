@@ -201,7 +201,7 @@ int init_tox() {
 
 	const char* address = "178.62.125.224";
 	uint16_t port = 33445;
-	unsigned char* binary_string = hex_string_to_bin("10B20C49ACBD968D7C80F2E8438F92EA51F189F4E70CFBBB2C2C8C799E97F03E");
+	unsigned char* binary_string = hex_string_to_bin("04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F");
 	int res = tox_bootstrap_from_address(tox, address, port, binary_string);
 	free(binary_string);
 
