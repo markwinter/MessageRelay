@@ -103,14 +103,14 @@ void print_bottom_bar() {
 
 void print_help() {
 	add_message(message_list, "Commands");
-	add_message(message_list, "/help - prints this message");
-	add_message(message_list, "/id - print the tox id of this relay");
-	add_message(message_list, "/name - sets your name");	
-	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
-	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
+	add_message(message_list, "/help - Prints this message");
+	add_message(message_list, "/id - Print the tox ID of this relay");
+	add_message(message_list, "/name - Sets your name");	
+	add_message(message_list, "/addfriend <Tox ID> - Adds Tox id as a friend");
+	add_message(message_list, "/addrelay <Tox ID> - Adds Tox id as message destination (and as a friend)");
 	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
-	add_message(message_list, "/clear - clears the screen");
-	add_message(message_list, "/quit - exits the client");
+	add_message(message_list, "/clear - Clears the screen");
+	add_message(message_list, "/quit - Exits the client");
 }
 
 void save_data() {
