@@ -358,15 +358,15 @@ void refresh_screen() {
 	print_bottom_bar();
 	print_offlineonly();
 
-	/* Print the message list to screen */
-	Item* curr = message_list->head;
-	int counter = 0;
-	int offset = 2;
-
 	/* If too many messages to display, then remove the top messages until it can fit */
 	if (message_list->message_count > ROW - 5)
 		shift_list_head(message_list, (message_list->message_count - ROW - 5));
 
+	/* Print the message list to screen */
+	Item* curr = message_list->head;
+	int counter = 0;
+	int offset = 2;
+	
 	while (curr != 0) {
 		mvprintw(offset + counter, 0, "%s", curr->message);
 		curr = curr->next;
