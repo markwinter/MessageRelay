@@ -103,14 +103,14 @@ void print_bottom_bar() {
 
 void print_help() {
 	add_message(message_list, "Commands");
-	add_message(message_list, "/help - prints this message");
-	add_message(message_list, "/id - print the tox id of this relay");
-	add_message(message_list, "/name - sets your name");	
-	add_message(message_list, "/addfriend <tox id> - adds tox id as a friend");
-	add_message(message_list, "/addrelay <tox id> - adds tox id as message destination (and as a friend)");
+	add_message(message_list, "/help - Prints this message");
+	add_message(message_list, "/id - Print the tox ID of this relay");
+	add_message(message_list, "/name - Sets your name");	
+	add_message(message_list, "/addfriend <Tox ID> - Adds Tox id as a friend");
+	add_message(message_list, "/addrelay <Tox ID> - Adds Tox id as message destination (and as a friend)");
 	add_message(message_list, "/offlineonly <1|0> - 1 will cause the relay to only store messages. Default 0");
-	add_message(message_list, "/clear - clears the screen");
-	add_message(message_list, "/quit - exits the client");
+	add_message(message_list, "/clear - Clears the screen");
+	add_message(message_list, "/quit - Exits the client");
 }
 
 void save_data() {
@@ -201,7 +201,7 @@ int init_tox() {
 
 	const char* address = "178.62.125.224";
 	uint16_t port = 33445;
-	unsigned char* binary_string = hex_string_to_bin("10B20C49ACBD968D7C80F2E8438F92EA51F189F4E70CFBBB2C2C8C799E97F03E");
+	unsigned char* binary_string = hex_string_to_bin("04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F");
 	int res = tox_bootstrap_from_address(tox, address, port, binary_string);
 	free(binary_string);
 
