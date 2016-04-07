@@ -4,9 +4,9 @@ RELEASE=1
 ARCH_TYPE=`uname -m`
 
 all:
-	gcc -std=gnu99 -g -DAL_LIBTYPE_STATIC -O3 -o ${APP} -Isrc src/*.c -ltoxcore -lsodium -lncurses -lrt -lpthread
+	gcc -std=gnu99 -DAL_LIBTYPE_STATIC -O3 -o ${APP} -Isrc src/*.c -ltoxcore -lsodium -lncurses -lrt -lpthread
 debug:
-	gcc -std=gnu99 -g -DAL_LIBTYPE_STATIC -g -o ${APP} -Isrc src/*.c -ltoxcore -lsodium -lncurses -lrt -lpthread
+	gcc -std=gnu99 -DAL_LIBTYPE_STATIC -g -o ${APP} -Isrc src/*.c -ltoxcore -lsodium -lncurses -lrt -lpthread
 source:
 	tar -cvzf ../${APP}_${VERSION}.orig.tar.gz ../${APP}-${VERSION} --exclude-vcs
 install:

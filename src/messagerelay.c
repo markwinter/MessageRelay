@@ -160,14 +160,21 @@ void load_data() {
 
         uint8_t data[size];
 
-        fread(data, sizeof(uint8_t), size, file);
+        if (fread(data, sizeof(uint8_t), size, file) == 0) {
+            printf("Nothing to read\n");
+            fclose(file);
+            return;
+        }
 
         struct Tox_Options options;
         TOX_ERR_NEW load_error;
+
+        tox_kill(tox);
+		options.savedata_data = (uint8_t *)data;
         options.ipv6_enabled = 1;
         options.udp_enabled = 1;
         options.proxy_type = TOX_PROXY_TYPE_NONE;
-        memcpy((void*)options.savedata_data, (void*)&data, size);
+		options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
         options.savedata_length = size;
         tox = tox_new(&options, &load_error);
         if (load_error != TOX_ERR_NEW_OK) {
