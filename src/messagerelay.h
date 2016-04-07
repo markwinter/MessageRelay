@@ -1,15 +1,6 @@
 #ifndef MESSAGE_RELAY_H_
 #define MESSAGE_RELAY_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ncurses.h>
-#include <string.h>
-#include <unistd.h>
-#include <ctype.h>
-
-#include <tox/tox.h>
-
 void print_title();
 void print_offlineonly();
 void print_bottom_bar();
