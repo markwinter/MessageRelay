@@ -170,11 +170,11 @@ void load_data() {
         TOX_ERR_NEW load_error;
 
         tox_kill(tox);
-		options.savedata_data = (uint8_t *)data;
+        options.savedata_data = (uint8_t *)data;
         options.ipv6_enabled = 1;
         options.udp_enabled = 1;
         options.proxy_type = TOX_PROXY_TYPE_NONE;
-		options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
+        options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
         options.savedata_length = size;
         tox = tox_new(&options, &load_error);
         if (load_error != TOX_ERR_NEW_OK) {
