@@ -1,1 +1,0 @@
-gcc -std=gnu99 -g -DAL_LIBTYPE_STATIC -o messagerelay ./*.c -I /usr/local/include /usr/local/lib/libtoxcore.a /usr/local/lib/libsodium.a -lncurses -lrt -lpthread
