@@ -1,9 +1,0 @@
-Message Relay for Tox
-
-Forwards all incoming messages to another Tox address, storing any messages when you're offline.
-
-Currently only allows for forwaring to a single address.
-
-Can toggle the relay to only store messages for when you're offline as opposed to actively relaying messages when you're online as well.
-
-To compile it just run ./compile. You'll need the tox, sodium and ncurses libs installed on your distro 
