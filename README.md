@@ -1,4 +1,4 @@
-# Message Relay for Tox
+# Message Relay for Cocks
 
 Forwards all incoming messages to another Tox address, storing any messages when you're offline.
 
